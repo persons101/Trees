@@ -1,7 +1,10 @@
 #ifndef BINARYSEARCHTREE_H
 #define BINARYSEARCHTREE_H
 
+#include <algorithm>
+#include <iostream>
 #include "BSTNode.h"
+#include "BSTNodeVisitor.h"
 
 class BinarySearchTree {
 private:
@@ -13,6 +16,83 @@ private:
          DeleteTree(treeRoot->right);
          delete treeRoot;
       }
+   }
+
+protected:
+   int GetHeight(BSTNode* node) const {
+      if (node == nullptr) {
+         return -1;
+      }
+      int leftHeight = GetHeight(node->left);
+      int rightHeight = GetHeight(node->right);
+      return 1 + std::max(leftHeight, rightHeight);
+   }
+   
+   void InOrder(BSTNode* node, BSTNodeVisitor& visitor) {
+      if (node) {
+         InOrder(node->left, visitor);
+         visitor.Visit(node);
+         InOrder(node->right, visitor);
+      }
+   }
+   
+   void InsertNode(BSTNode* newNode) {
+      // Check if tree is empty
+      if (root == nullptr) {
+         root = newNode;
+      }
+      else {
+         BSTNode* currentNode = root;
+         while (currentNode) {
+            if (newNode->key < currentNode->key) {
+               // If no left child exists, add the new node
+               // here; otherwise repeat from the left child
+               if (currentNode->left == nullptr) {
+                  currentNode->left = newNode;
+                  currentNode = nullptr;
+               }
+               else {
+                  currentNode = currentNode->left;
+               }
+            }
+            else {
+               // If no right child exists, add the new node
+               // here; otherwise repeat from the right child
+               if (currentNode->right == nullptr) {
+                  currentNode->right = newNode;
+                  currentNode = nullptr;
+               }
+               else {
+                  currentNode = currentNode->right;
+               }
+            }
+         }
+      }
+   }
+   
+   BSTNode* Search(int key) {
+      BSTNode* currentNode = root;
+      while (currentNode) {
+         // Return the node if the key matches
+         if (key == currentNode->key) {
+            return currentNode;
+         }
+         
+         // Navigate to the left if the search key is
+         // less than the node's key
+         else if (key < currentNode->key) {
+            currentNode = currentNode->left;
+         }
+         
+         // Navigate to the right if the search key is
+         // greater than the node's key
+         else {
+            currentNode = currentNode->right;
+         }
+      }
+      
+      // The key was not found in the tree
+      return nullptr;
    }
 
 public:
@@ -28,77 +108,25 @@ public:
       return Search(key) != nullptr;
    }
    
-   BSTNode* GetRoot() const {
-      return root;
-   }
-   
-   BSTNode* Search(int searchKey) {
-      BSTNode* currentNode = root;
-      while (currentNode) {
-         // Return the node if the key matches
-         if (currentNode->key == searchKey) {
-            return currentNode;
-         }
-         
-         // Navigate to the left if the search key is 
-         // less than the node's key
-         else if (searchKey < currentNode->key) {
-            currentNode = currentNode->left;
-         }
-         
-         // Navigate to the right if the search key is 
-         // greater than the node's key
-         else {
-            currentNode = currentNode->right;
-         }
-      }
-      
-      // Key not found
-      return nullptr;
-   }
-   
-   void InsertNode(BSTNode* newNode) {
-      // Check if tree is empty
-      if (root == nullptr) {
-         root = newNode;
-      }
-      else {
-         BSTNode* currentNode = root;
-         while (currentNode) {
-            if (newNode->key < currentNode->key) {
-               // If no left child exists, add the new node
-               // here; otherwise repeat from the left child.
-               if (currentNode->left == nullptr) {
-                  currentNode->left = newNode;
-                  currentNode = nullptr;
-               }
-               else {
-                  currentNode = currentNode->left;
-               }
-            }
-            else {
-               // If no right child exists, add the new node
-               // here; otherwise repeat from the right child.
-               if (currentNode->right == nullptr) {
-                  currentNode->right = newNode;
-                  currentNode = nullptr;
-               }
-               else {
-                  currentNode = currentNode->right;
-               }
-            }
-         }
-      }
+   int GetHeight() const {
+      return GetHeight(root);
    }
    
    bool InsertKey(int key) {
-      // Duplicate keys not allowed
-      if (Contains(key)) {         
+      if (Contains(key)) {
+         // Duplicate keys not allowed
          return false;
       }
-
+      
+      // Create and insert a new node for the key and return true
       InsertNode(new BSTNode(key));
       return true;
+   }
+   
+   // Performs an inorder traversal of the BST, calling the visitor's Visit()
+   // function for each node
+   void InOrder(BSTNodeVisitor& visitor) {
+      InOrder(root, visitor);
    }
    
    bool Remove(int key) {
