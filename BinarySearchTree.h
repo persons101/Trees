@@ -111,6 +111,10 @@ public:
    int GetHeight() const {
       return GetHeight(root);
    }
+
+   BSTNode* GetRoot() const {
+      return root;
+   }
    
    bool InsertKey(int key) {
       if (Contains(key)) {
@@ -213,6 +217,7 @@ public:
       }
       return false; // Node not found
    }
+
 };
 
 #endif
